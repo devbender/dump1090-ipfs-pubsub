@@ -5,7 +5,7 @@ After=ipfs.service
 
 [Service]
 User=ubuntu
-ExecStart=/usr/bin/python3 /home/ubuntu/ipfs_pubsub_dump1090/ipfs_pub_dump1090.py
+ExecStart=/usr/bin/python3 /home/ubuntu/ipfs_pubsusb_dump1090/ipfs_pub_dump1090.py
 Type=simple
 Restart=on-failure
 RestartSec=10
