@@ -1,0 +1,14 @@
+[Unit]
+Description=IPFS dump1090 PubSub
+Wants=dump1090-fa.service
+After=ipfs.service
+
+[Service]
+User=ubuntu
+ExecStart=/usr/bin/python3 /home/ubuntu/ipfs_pubsub_dump1090/ipfs_pub_dump1090.py
+Type=simple
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
