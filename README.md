@@ -10,13 +10,13 @@ Modify the __ipfs-dump1090.service__ file with your current user and the path to
 Copy the service file to __/etc/systemd/system/__
 
 To start:
-'sudo systemctl start ipfs-dump1090.service'
+`sudo systemctl start ipfs-dump1090.service`
 
 Confirm its running:
-'sudo systemctl status ipfs-dump1090.service'
+`sudo systemctl status ipfs-dump1090.service`
 
 To auto start:
-'sudo systemctl enable ipfs-dump1090.service'
+`sudo systemctl enable ipfs-dump1090.service`
 
 ## Credits
 
