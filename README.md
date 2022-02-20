@@ -27,6 +27,7 @@ __NOTE: At the moment only ADS-B SBS-1 data is supported, more coming soon!__
 
 * An up and running dump1090 instance
 * A local IPFS node with pubsub enabled (--enable-pubsub-experiment flag)
+* Python requests: `pip3 install requests`
 
 
 ## Defining a location-based topic nomenclature
