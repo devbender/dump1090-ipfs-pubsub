@@ -60,7 +60,7 @@ More than one topic can be specified if you wish to publish to more than one IAT
 TOPICS = ['ADSB-MIA', 'ADSB-FLL']
 ```
 
-Modify the __ipfs-dump1090.service__ unit file with your current user and the path to de repo. You can skip if you are running via raspberry pi default user pi and cloned to the home directory.
+Modify the __ipfs-dump1090.service__ unit file with your current user and the path to the repo. You can skip if you are running via raspberry pi default user pi and cloned to the home directory.
 ```
 [Service]
 User=pi
