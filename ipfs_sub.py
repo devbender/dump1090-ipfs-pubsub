@@ -11,7 +11,7 @@ import ipfs_pubsub as ipfs
 TOPIC = 'ADSB-SDQ'
 
 def onData( peer, data ):
-    print( peer, json.loads( data ) )
+    print( json.loads( data ) )
 
 ipfs.printPeers( TOPIC )
 

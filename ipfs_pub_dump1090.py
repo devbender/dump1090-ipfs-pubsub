@@ -12,13 +12,10 @@ from collections import OrderedDict
 
 TOPICS = ['ADSB-SDQ', 'ADSB-JBQ']
 
-key_order = ['icao', 'cs', 'ts', 'alt', 'lat', 'lon', 'spd', 'trk', 'vrt', 'gf']
-
 def onData( data ):
-    new_data = dict( OrderedDict((k, data.get(k)) for k in key_order) )
-    
-    for topic in TOPICS:        
-        ipfs.publish( topic, json.dumps(new_data) ) 
+    #print( data )    
+    for topic in TOPICS: 
+        ipfs.publish( topic, data )
 
 dump1090.run( host = 'localhost',
               port = 30003,

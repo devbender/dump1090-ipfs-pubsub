@@ -8,8 +8,8 @@
 import socket, json, logging, argparse, threading
 from requests import get as getJSON
 from time import sleep, time
-from concurrent.futures import ThreadPoolExecutor
 from typing import Optional, Callable
+from collections import OrderedDict
 
 ###############################################################################
 # SBS1 MSG FIELDS
@@ -40,11 +40,15 @@ def SBS1toDict( line ):
    SBS1 = line.split(",")
    msgtype = SBS1[msgtype_field]
    icao = SBS1[icao_field]
+   
+   if( SBS1[gndf] == "" ):    ongnd = 0
+   elif (SBS1[gndf] == "-1"): ongnd = 1
+   else: ongnd = 0
      
    if msgtype == '1':
       return { 'id': int(msgtype), 
                'icao': icao, 
-               'cs': SBS1[callsign_field].rstrip(), 
+               'csg': SBS1[callsign_field].rstrip(), 
                'ts': int(time()) }
       
    elif msgtype == '2': 
@@ -55,7 +59,7 @@ def SBS1toDict( line ):
                'lon': SBS1[lon_field],
                'spd': SBS1[gspd_field],
                'trk': SBS1[trk_field],
-               'gf':  SBS1[gndf],
+               'gnf': ongnd,
                'ts': int( time() )
                }
    
@@ -66,7 +70,7 @@ def SBS1toDict( line ):
                   'alt': int(SBS1[alt_field]),
                   'lat': float(SBS1[lat_field]), 
                   'lon': float(SBS1[lon_field]), 
-                  'gf': SBS1[gndf],
+                  'gnf': ongnd,
                   'ts': int( time() )
                   }
 
@@ -86,28 +90,28 @@ def SBS1toDict( line ):
 def updateLocalCache( data ):
 
    icao = data['icao']
-   msgid = data['id']
+   msgid = data['id']   
    
    if icao in localCache:
 
       # If in local cache update data
       if msgid == 1:
          logging.debug(f"[UPDATED][CALLSIGN] {icao}")
-         localCache[icao]['cs'] = data['cs']
+         localCache[icao]['csg'] = data['csg']
 
       elif msgid == 2:
          logging.debug(f"[UPDATED][G-LOCATION] {icao}")
          localCache[icao]['alt'] = 0
          localCache[icao]['lat'] = data['lat']
          localCache[icao]['lon'] = data['lon']
-         localCache[icao]['gf'] = data['gf']
+         localCache[icao]['gnf'] = data['gnf']
                
       elif msgid == 3:
          logging.debug(f"[UPDATED][LOCATION] {icao}")
          localCache[icao]['alt'] = data['alt']
          localCache[icao]['lat'] = data['lat']
          localCache[icao]['lon'] = data['lon']
-         localCache[icao]['gf'] = data['gf']
+         localCache[icao]['gnf'] = data['gnf']
 
       elif msgid == 4:
          logging.debug(f"[UPDATED][VECTOR] {icao}")
@@ -117,17 +121,26 @@ def updateLocalCache( data ):
       
       else: pass
 
+      # Common fields
       localCache[icao]['stl'] = 0
+      localCache[icao]['new'] = 1            
       localCache[icao]['ts'] = data['ts']
+      
 
    # New aircraft
    else:
-      localCache[icao] = {}
-      #logging.info(f"[NEW] {icao}")
+      localCache[icao] = {'csg': '', 
+                          'alt': '', 
+                          'lat': '', 
+                          'lon': '', 
+                          'gnf': '', 
+                          'spd': '', 
+                          'trk': '', 
+                          'vrt': '' }
      
       if msgid == 1:
          logging.debug(f"[NEW][CALLSIGN] {icao}")
-         localCache[icao] = { 'cs': data['cs'] }
+         localCache[icao] = { 'csg': data['csg'] }
 
       if msgid == 3:
          logging.debug(f"[NEW][LOCATION] {icao}")
@@ -140,7 +153,9 @@ def updateLocalCache( data ):
                               'trk': data['trk'], 
                               'vrt': data['vrt'] }
 
+      # Common fields
       localCache[icao]['stl'] = 0
+      localCache[icao]['new'] = 1
       localCache[icao]['icao'] = str(data['icao'])
       localCache[icao]['ts'] = data['ts']      
 
@@ -202,14 +217,24 @@ def exportLocalCache(callback, data_delay):
    logging.info("[exportLocalCache] Started")
    logging.info(f"[exportLocalCache] Callback: {callback}")
    
+   export_key_order = ['icao', 'csg', 'ts', 'alt', 'lat', 'lon', 'spd', 'trk', 'vrt', 'gnf']
+
+
    while threading.currentThread().do_run:
       
       try: 
          # Export to callback aircrafts that have location and have been recenlty updated (not stale)
          for icao in list(localCache):
             if callback != None:
-               if ('lat' in localCache[icao]) and ('lon' in localCache[icao]) and (not localCache[icao]['stl']):
-                  callback( localCache[icao] )                  
+               if ('lat' in localCache[icao]) and \
+                  ('lon' in localCache[icao]) and \
+                  (not localCache[icao]['stl']) and \
+                  ( localCache[icao]['new'] ):
+                  
+                  dataOUT = dict( OrderedDict((k, localCache[icao].get(k)) for k in export_key_order) )
+                  callback( dataOUT )
+
+                  localCache[icao]['new'] = 0
             else: pass         
          
          # write local cache to file
@@ -217,7 +242,7 @@ def exportLocalCache(callback, data_delay):
          #   json.dump(localCache, f, indent=4)
       
       except KeyError as e:
-         logging.warning(f"EXCEPTION (exportLocalCache) [KeyError]: {e}")
+         pass #logging.warning(f"EXCEPTION (exportLocalCache) [KeyError]: {e}")
 
       except Exception as e:
          logging.warning(f"EXCEPTION (exportLocalCache): {e}")
@@ -291,7 +316,7 @@ def run( host: Optional[str] = 'localhost',
    try: 
       while True: 
          aircraft_count = len(localCache)
-         logging.info("Tracking: %s aircraft(s)" % aircraft_count)
+         logging.debug("Tracking: %s aircraft(s)" % aircraft_count)
          sleep(10)
    except KeyboardInterrupt:
       logging.info("Stopping threads...")

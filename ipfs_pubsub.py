@@ -33,9 +33,9 @@ def printPeers( topic ):
 
    print( json.loads( peers.text )['Strings'] )
 
-def publish( topic, data ):
-   urlPub = "http://127.0.0.1:5001/api/v0/pubsub/pub?arg="
-   data = {'file': (data)}
+def publish( topic, dataIN, delimiter='\n' ):
+   urlPub = "http://127.0.0.1:5001/api/v0/pubsub/pub?arg="   
+   data = { 'file': ( json.dumps(dataIN) + delimiter ) }
    pub = requests.post( urlPub + ipfs_b64encode(topic), files=data )
    
    return pub
