@@ -55,7 +55,7 @@ Then cd into the repo directory and modify the __ipfs_pub_dump1090.py__ and add 
 ```
 TOPICS = []
 ```
-More than one can be specified if you wish to publish to more than one IATA code at the time for airports that are relatively close, for example MIA an FLL that are 20 miles apart:
+More than one topic can be specified if you wish to publish to more than one IATA code at the time for airports that are relatively close, for example MIA an FLL that are 20 miles apart:
 ```
 TOPICS = ['ADSB-MIA', 'ADSB-FLL']
 ```
