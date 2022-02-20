@@ -10,7 +10,7 @@ import ipfs_pubsub as ipfs
 import ipfs_dump1090 as dump1090
 from collections import OrderedDict
 
-TOPICS = ['ADSB-SDQ', 'ADSB-JBQ']
+TOPICS = []
 
 def onData( data ):
     #print( data )    
