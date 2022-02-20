@@ -9,7 +9,16 @@ This python script (package soon) grabs the SBS-1 TCP output of any dump1090 (us
 * __MSG:3__ ES Airborne Position
 * __MSG:4__ ES Airborne Velocity
 
-The agregated data is published via Pubsub to IPFS to the specified topics in the file __ipfs_pub_dump1090.py__ in a newline-delimited JSON (NDJSON) format.
+The agregated data is published via Pubsub to IPFS to the specified topics in the file __ipfs_pub_dump1090.py__ in a newline-delimited JSON (NDJSON) format once per second. Example output:
+```
+{"icao": "AA7B33", "csg": "SWA317", "ts": 1645374580, "alt": 27275, "lat": 28.81928, "lon": -94.51193, "spd": 463, "trk": 143, "vrt": 1536, "gnf": 0}
+{"icao": "AB3655", "csg": "UAL2118", "ts": 1645374580, "alt": 38000, "lat": 27.69746, "lon": -96.37498, "spd": 382, "trk": 208, "vrt": 0, "gnf": 0}
+{"icao": "A05AD1", "csg": "UCA4296", "ts": 1645374580, "alt": 11550, "lat": 30.30537, "lon": -95.45584, "spd": 299, "trk": 324, "vrt": 1344, "gnf": 0}
+{"icao": "AAA0D1", "csg": "N784QS", "ts": 1645374580, "alt": 43000, "lat": 28.87775, "lon": -95.639, "spd": 386, "trk": 233, "vrt": 0, "gnf": 0}
+{"icao": "A0BF31", "csg": "N1471E", "ts": 1645374580, "alt": 800, "lat": 29.46629, "lon": -95.14562, "spd": 90, "trk": 109, "vrt": 128, "gnf": 0}
+```
+
+The output only contains the data of aircrafts that have updated information since the last send period. Aircraft aggregated data is cached for 30 seconds and dropped after if no update is received.
 
 __NOTE: At the moment only ADS-B SBS-1 data is supported, more coming soon!__
 
