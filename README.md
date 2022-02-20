@@ -51,11 +51,11 @@ Clone the repo preferably to your home directory.
 git clone https://github.com/devbender/ipfs_pubsusb_dump1090
 ```
 
-Then cd into the repo directory and modify the __ipfs_pub_dump1090.py__ and add the topic names to where your data will be published according to the specified nomenclature (see examples above), more than one can be specified if you wish to publish to more than one IATA code at the time for airports that are relatively close, for example MIA an FLL that are 20 miles apart.
+Then cd into the repo directory and modify the __ipfs_pub_dump1090.py__ and add the topic names to where your data will be published according to the specified nomenclature (see examples above).
 ```
 TOPICS = []
 ```
-Example: 
+More than one can be specified if you wish to publish to more than one IATA code at the time for airports that are relatively close, for example MIA an FLL that are 20 miles apart:
 ```
 TOPICS = ['ADSB-MIA', 'ADSB-FLL']
 ```
