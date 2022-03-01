@@ -243,7 +243,7 @@ async def main( exportCallback=None, metadataCallback=None, loglevel='INFO' ):
 
    logging.info("Starting tasks...")
    
-   task1 = asyncio.create_task( getSBS1DataTask('10.0.0.100', 30003) )
+   task1 = asyncio.create_task( getSBS1DataTask('localhost', 30003) )
    task2 = asyncio.create_task( exportDataTask(exportCallback) )
    task3 = asyncio.create_task( localCleanupTask(metadataCallback, 10, 60) )
 
