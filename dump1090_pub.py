@@ -5,12 +5,11 @@
 # Copyright (C) 2022  Juan Benitez
 # Distributed under GPLv3
 ###############################################################################
-from posixpath import split
 from ipfs_pubsub import IPFS_API as IPFS_PUBSUB
-import ipfs_dump1090_async as dump1090
+import dump1090_async as dump1090
 from uuid import uuid4
 from time import time
-from json import load as loadjson, loads
+from json import load as loadjson
 from configparser import ConfigParser
 
 
@@ -37,7 +36,7 @@ MY_RX_LOCATION = [ float( config['receiver']['lat'] ),
 PUB_CHANNEL_ID = config['channel']['id']
 
 if PUB_CHANNEL_ID == '':
-    PUB_CHANNEL_ID = uuid4().hex
+    PUB_CHANNEL_ID = str(uuid4())
     config.set('channel', 'id', PUB_CHANNEL_ID)
 
     with open('ipfs_dump1090.conf', 'w') as configfile:
