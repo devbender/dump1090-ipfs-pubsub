@@ -217,8 +217,7 @@ async def localCleanupTask(exportMetadata, cleanEveryXsecs=10, expireEveryYsecs=
 
    logging.info("TASK: [localCleanupTask] Started")
    
-   while True:
-      await asyncio.sleep(cleanEveryXsecs)
+   while True:      
    
       for icao in list(localCache):
 
@@ -230,6 +229,8 @@ async def localCleanupTask(exportMetadata, cleanEveryXsecs=10, expireEveryYsecs=
          else: pass
 
       exportMetadata()
+
+      await asyncio.sleep(cleanEveryXsecs)
 
 ###############################################################################
 # ASYNC MAIN
@@ -243,7 +244,7 @@ async def main( exportCallback=None, metadataCallback=None, loglevel='INFO' ):
 
    logging.info("Starting tasks...")
    
-   task1 = asyncio.create_task( getSBS1DataTask('localhost', 30003) )
+   task1 = asyncio.create_task( getSBS1DataTask('10.0.0.100', 30003) )
    task2 = asyncio.create_task( exportDataTask(exportCallback) )
    task3 = asyncio.create_task( localCleanupTask(metadataCallback, 10, 60) )
 
@@ -251,6 +252,7 @@ async def main( exportCallback=None, metadataCallback=None, loglevel='INFO' ):
    tasks.append(task2)
    tasks.append(task3)
    
+   await asyncio.sleep(1)
    logging.info("*** RUNNING ***")
     
    while True: await asyncio.sleep(1)
