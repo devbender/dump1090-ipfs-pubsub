@@ -6,11 +6,8 @@
 # Distributed under GPLv3
 ###############################################################################
 from dataclasses import dataclass
-import requests, json, sys, socket
-from requests.api import get
-from requests.models import iter_slices
+import requests, json
 from base64 import b64decode, b64encode
-from time import sleep, time
 
 @dataclass
 class IPFS_API:
@@ -64,22 +61,3 @@ class IPFS_API:
 ###############################################################################
 if __name__ == '__main__':
    pass
-
-   # CMD = str(sys.argv[1]) 
-   # TOPIC = str(sys.argv[2])
-   
-   # def onMsg( peer, data): 
-   #    print( peer, data)
-
-   # if CMD == "peers": printPeers(TOPIC)
-   # elif CMD == "pub": 
-   #    DATA = str(sys.argv[3])
-   #    publish(TOPIC, DATA)
-   # elif CMD == "sub": 
-   #    subscribe(TOPIC, onMsg)
-   # elif CMD == "encode":
-   #    print(ipfs_b64encode(TOPIC))
-   # elif CMD == "decode":
-   #    print(ipfs_b64decode(TOPIC))
-   # else:
-   #    print("Error: Invalid command")

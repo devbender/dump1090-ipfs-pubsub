@@ -170,7 +170,9 @@ def updateLocalCache( data ):
 async def getSBS1DataTask( dump1090Host='localhost', dump1090Port=30003, frameSizeKb=64 ):
    logging.info("TASK: [getSBS1DataTask] Started")
     
-   reader, writer = await asyncio.open_connection( dump1090Host, dump1090Port)
+   try: reader, writer = await asyncio.open_connection( dump1090Host, dump1090Port)
+   except Exception as e:
+      logging.error(f"Unable to connect to dump1090: {e}")
 
    while True:
       data = await reader.read( frameSizeKb*1024 )
@@ -235,7 +237,7 @@ async def localCleanupTask(exportMetadata, cleanEveryXsecs=10, expireEveryYsecs=
 ###############################################################################
 # ASYNC MAIN
 ###############################################################################
-async def main( exportCallback=None, metadataCallback=None, loglevel='INFO' ):
+async def main( exportCallback, metadataCallback, dump1090_host, dump1090_port, loglevel ):
    
    # Setup logging
    numeric_level = getattr(logging, loglevel.upper())
@@ -244,7 +246,7 @@ async def main( exportCallback=None, metadataCallback=None, loglevel='INFO' ):
 
    logging.info("Starting tasks...")
    
-   task1 = asyncio.create_task( getSBS1DataTask('10.0.0.100', 30003) )
+   task1 = asyncio.create_task( getSBS1DataTask(dump1090_host, dump1090_port) )
    task2 = asyncio.create_task( exportDataTask(exportCallback) )
    task3 = asyncio.create_task( localCleanupTask(metadataCallback, 10, 60) )
 
@@ -260,9 +262,13 @@ async def main( exportCallback=None, metadataCallback=None, loglevel='INFO' ):
 ###############################################################################
 # RUN
 ###############################################################################
-def run( exportCallback=None, metadataCallback=None, loglevel='INFO', metadata=None ):
+def run( exportCallback=None, 
+         metadataCallback=None, 
+         dump1090_host='localhost',
+         dump1090_port=30003,
+         loglevel='INFO' ):
    
-   try: asyncio.run( main(exportCallback, metadataCallback, loglevel) )
+   try: asyncio.run( main(exportCallback, metadataCallback, dump1090_host, dump1090_port, loglevel) )
    
    except KeyboardInterrupt:
 
@@ -278,6 +284,9 @@ def run( exportCallback=None, metadataCallback=None, loglevel='INFO', metadata=N
          json.dump({}, outfile, indent=4)
 
       logging.info("*** TERMINATED ***")
+
+   except Exception as e:
+      logging.error(e)
 
 ###############################################################################
 # MAIN
