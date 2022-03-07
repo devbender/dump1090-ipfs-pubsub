@@ -8,7 +8,7 @@
 import logging
 from ipfs_pubsub import IPFS_API as IPFS_PUBSUB
 import dump1090_async as dump1090
-from os import getcwd
+from os import path
 from uuid import uuid4
 from time import time
 from json import load as loadjson
@@ -18,9 +18,10 @@ from configparser import ConfigParser
 ###############################################################################
 # CONFIGURATION
 ###############################################################################
-config_path = getcwd() + '/'
+config_file = 'ipfs_dump1090.conf'
+config_path = path.join( path.dirname(__file__), config_file )
 config = ConfigParser()
-config.read(config_path + 'ipfs_dump1090.conf')
+config.read( config_path )
 
 
 # [ipfs] Set IPFS HTTP API params from config file
