@@ -102,9 +102,10 @@ def pubMetaData():
 ###############################################################################
 # RUN MAIN
 ###############################################################################
-print(f"IPFS-API Url: {pubsub.base_url}")
-print(f"Publishing metadata to: {METADATA_PUB_CHANNELS}")
-print(f"Publishing data to: {PUB_CHANNEL_ID}")
+logging.info(">>> DUMP1090 IPFS PUBSUB v0.1<<<")
+logging.info(f"ipfs api url: {pubsub.base_url}")
+logging.info(f"Publishing metadata to: {METADATA_PUB_CHANNELS}")
+logging.info(f"Publishing data to: {PUB_CHANNEL_ID}")
 
 dump1090.run(exportCallback=onData, 
              metadataCallback=pubMetaData,
