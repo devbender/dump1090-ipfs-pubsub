@@ -16,6 +16,15 @@ from configparser import ConfigParser
 
 
 ###############################################################################
+# LOGGING
+###############################################################################
+loglevel = 'info'
+
+numeric_level = getattr(logging, loglevel.upper())
+fmt = '[%(levelname)s] %(asctime)s - %(message)s'
+logging.basicConfig(level=numeric_level, format=fmt)
+
+###############################################################################
 # CONFIGURATION
 ###############################################################################
 config_name = 'ipfs_dump1090.conf'
