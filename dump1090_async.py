@@ -8,9 +8,13 @@
 import asyncio, logging,json
 from time import time
 from collections import OrderedDict
+from os import path
 
 tasks = []
 localCache = {}
+
+cacheFileName = 'dump1090.json'
+cacheFile = path.join( path.dirname(__file__), cacheFileName )
 
 ###############################################################################
 # SBS1 MSG FIELDS
@@ -208,7 +212,7 @@ async def exportDataTask( callback=None):
 
             localCache[icao]['new'] = 0
 
-      with open('dump1090.json', 'w') as outfile:
+      with open(cacheFile, 'w') as outfile:
          json.dump(localCache, outfile, indent=4)
 
 
@@ -280,7 +284,7 @@ def run( exportCallback=None,
          task.cancel()
 
       # Clear JSON file
-      with open('dump1090.json', 'w') as outfile:
+      with open(cacheFile, 'w') as outfile:
          json.dump({}, outfile, indent=4)
 
       logging.info("*** TERMINATED ***")
