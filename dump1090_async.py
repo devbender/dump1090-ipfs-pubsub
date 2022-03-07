@@ -244,7 +244,7 @@ async def main( exportCallback, metadataCallback, dump1090_host, dump1090_port, 
    fmt = '[%(levelname)s] %(asctime)s - %(message)s'
    logging.basicConfig(level=numeric_level, format=fmt)
 
-   logging.info("Starting tasks...")
+   logging.info("Starting dump1090 tasks...")
    
    task1 = asyncio.create_task( getSBS1DataTask(dump1090_host, dump1090_port) )
    task2 = asyncio.create_task( exportDataTask(exportCallback) )
@@ -273,7 +273,7 @@ def run( exportCallback=None,
    except KeyboardInterrupt:
 
       logging.info("KeyboardInterrupt")
-      logging.info("Stopping tasks...")
+      logging.info("Stopping dump1090 tasks...")
 
       # Cancel all tasks
       for task in tasks:
