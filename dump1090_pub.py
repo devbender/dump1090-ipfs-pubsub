@@ -18,10 +18,10 @@ from configparser import ConfigParser
 ###############################################################################
 # CONFIGURATION
 ###############################################################################
-config_file = 'ipfs_dump1090.conf'
-config_path = path.join( path.dirname(__file__), config_file )
+config_name = 'ipfs_dump1090.conf'
+config_file = path.join( path.dirname(__file__), config_name )
 config = ConfigParser()
-config.read( config_path )
+config.read( config_file )
 
 
 # [ipfs] Set IPFS HTTP API params from config file
@@ -58,7 +58,7 @@ if PUB_CHANNEL_ID == '':
     PUB_CHANNEL_ID = str(uuid4())
     config.set('channel', 'id', PUB_CHANNEL_ID)
 
-    with open('ipfs_dump1090.conf', 'w') as configfile:
+    with open(config_file, 'w') as configfile:
         config.write(configfile)
 else: pass
 
