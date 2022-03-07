@@ -112,8 +112,8 @@ def pubMetaData():
 # RUN MAIN
 ###############################################################################
 logging.info(">>> DUMP1090 IPFS PUBSUB v0.1 <<<")
-logging.info(f"Using ipfs api url @{pubsub.base_url}")
-logging.info(f"Using dump1090 instance @{DUMP1090_HOST}:{DUMP1090_PORT}")
+logging.info(f"Using ipfs api url @ {pubsub.base_url}")
+logging.info(f"Using dump1090 instance @ {DUMP1090_HOST}:{DUMP1090_PORT}")
 logging.info(f"Publishing metadata to: {METADATA_PUB_CHANNELS}")
 logging.info(f"Publishing dump1090 data to: {PUB_CHANNEL_ID}")
 
