@@ -27,7 +27,7 @@ logging.basicConfig(level=numeric_level, format=fmt)
 ###############################################################################
 # CONFIGURATION
 ###############################################################################
-config_name = 'ipfs_dump1090.conf'
+config_name = 'dump1090_ipfs.conf'
 config_file = path.join( path.dirname(__file__), config_name )
 config = ConfigParser()
 config.read( config_file )
@@ -64,7 +64,7 @@ for airport in airports:
 PUB_CHANNEL_ID = config['channel']['id']
 
 if PUB_CHANNEL_ID == '':
-    PUB_CHANNEL_ID = str(uuid4())
+    PUB_CHANNEL_ID = str(uuid4().hex)
     config.set('channel', 'id', PUB_CHANNEL_ID)
 
     with open(config_file, 'w') as configfile:
@@ -90,13 +90,13 @@ meta = {'id': PUB_CHANNEL_ID,
 def onData( data ):    
     try: pubsub.publishNDJSON( PUB_CHANNEL_ID, data )
     except Exception as e:
-        logging.error(f"IPFS Error: {e}")
+        logging.error("IPFS Error: %s", e)
 
 # METADATA CALLBACK
 def pubMetaData():
 
     # Check how many aircrafts we are tracking
-    with open('dump1090.json', 'r') as f:
+    with open(dump1090.cacheFile, 'r') as f:
         data = loadjson(f)
         meta['tracking'] = len(data)
 
@@ -112,10 +112,10 @@ def pubMetaData():
 # RUN MAIN
 ###############################################################################
 logging.info(">>> DUMP1090 IPFS PUBSUB v0.1 <<<")
-logging.info(f"Using ipfs api url @ {pubsub.base_url}")
-logging.info(f"Using dump1090 instance @ {DUMP1090_HOST}:{DUMP1090_PORT}")
-logging.info(f"Publishing metadata to: {METADATA_PUB_CHANNELS}")
-logging.info(f"Publishing dump1090 data to: {PUB_CHANNEL_ID}")
+logging.info("Using ipfs api url @ %s", pubsub.base_url)
+logging.info("Using dump1090 instance @ %s:%s", DUMP1090_HOST, DUMP1090_PORT)
+logging.info("Publishing metadata to: %s", METADATA_PUB_CHANNELS)
+logging.info("Publishing dump1090 data to: %s", PUB_CHANNEL_ID)
 
 dump1090.run(exportCallback=onData, 
              metadataCallback=pubMetaData,

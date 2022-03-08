@@ -13,7 +13,7 @@ from os import path
 tasks = []
 localCache = {}
 
-cacheFileName = 'dump1090.json'
+cacheFileName = 'localCache.json'
 cacheFile = path.join( path.dirname(__file__), cacheFileName )
 
 ###############################################################################
@@ -99,13 +99,13 @@ def updateLocalCache( data ):
 
       # If in local cache update data
       if msgid == 1:
-         logging.debug(f"[UPDATED][CALLSIGN] {icao}")
+         logging.debug("[UPDATED][CALLSIGN] %s", icao)
          localCache[icao]['csg'] = data['csg']
 
          # call sign msg does not trigger an update
 
       elif msgid == 2:
-         logging.debug(f"[UPDATED][G-LOCATION] {icao}")
+         logging.debug("[UPDATED][G-LOCATION] %s", icao)
          localCache[icao]['alt'] = 0
          localCache[icao]['lat'] = data['lat']
          localCache[icao]['lon'] = data['lon']
@@ -114,7 +114,7 @@ def updateLocalCache( data ):
          localCache[icao]['new'] = 1
                
       elif msgid == 3:
-         logging.debug(f"[UPDATED][LOCATION] {icao}")
+         logging.debug("[UPDATED][LOCATION] %s", icao)
          localCache[icao]['alt'] = data['alt']
          localCache[icao]['lat'] = data['lat']
          localCache[icao]['lon'] = data['lon']
@@ -123,7 +123,7 @@ def updateLocalCache( data ):
          localCache[icao]['new'] = 1
 
       elif msgid == 4:
-         logging.debug(f"[UPDATED][VECTOR] {icao}")
+         logging.debug("[UPDATED][VECTOR] %s", icao)
          localCache[icao]['spd'] = data['spd']
          localCache[icao]['trk'] = data['trk']
          localCache[icao]['vrt'] = data['vrt']
@@ -148,16 +148,16 @@ def updateLocalCache( data ):
                           'vrt': '' }
      
       if msgid == 1:
-         logging.debug(f"[NEW][CALLSIGN] {icao}")
+         logging.debug("[NEW][CALLSIGN] %s", icao)
          localCache[icao] = { 'csg': data['csg'] }
 
       if msgid == 3:
-         logging.debug(f"[NEW][LOCATION] {icao}")
+         logging.debug("[NEW][LOCATION] %s", icao)
          localCache[icao] = { 'alt': data['alt'], 
                               'lat': data['lat'], 
                               'lon': data['lon'] }
       if msgid == 4:
-         logging.debug(f"[NEW][VECTOR] {icao}")
+         logging.debug("[NEW][VECTOR] %s", icao)
          localCache[icao] = { 'spd': data['spd'], 
                               'trk': data['trk'], 
                               'vrt': data['vrt'] }
@@ -176,7 +176,7 @@ async def getSBS1DataTask( dump1090Host='localhost', dump1090Port=30003, frameSi
     
    try: reader, writer = await asyncio.open_connection( dump1090Host, dump1090Port)
    except Exception as e:
-      logging.error(f"Unable to connect to dump1090: {e}")
+      logging.error("Unable to connect to dump1090: %s", e)
 
    while True:
       data = await reader.read( frameSizeKb*1024 )
@@ -230,10 +230,11 @@ async def localCleanupTask(exportMetadata, cleanEveryXsecs=10, expireEveryYsecs=
          # Remove aircraft from local cache if no new data in last X seconds
          if (time() - localCache[icao]['ts'] ) > expireEveryYsecs:
             localCache.pop(icao, None)
-            logging.debug(f"[REMOVED] {icao}")
+            logging.debug("[REMOVED] %s", icao)
       
          else: pass
 
+      # Export metadata to callback
       exportMetadata()
 
       await asyncio.sleep(cleanEveryXsecs)
@@ -252,7 +253,7 @@ async def main( exportCallback, metadataCallback, dump1090_host, dump1090_port, 
    
    task1 = asyncio.create_task( getSBS1DataTask(dump1090_host, dump1090_port) )
    task2 = asyncio.create_task( exportDataTask(exportCallback) )
-   task3 = asyncio.create_task( localCleanupTask(metadataCallback, 10, 60) )
+   task3 = asyncio.create_task( localCleanupTask(metadataCallback) )
 
    tasks.append(task1)
    tasks.append(task2)
