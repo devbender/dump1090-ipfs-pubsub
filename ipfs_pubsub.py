@@ -5,21 +5,22 @@
 # Copyright (C) 2022  Juan Benitez
 # Distributed under GPLv3
 ###############################################################################
-from dataclasses import dataclass
 import requests, json
 from base64 import b64decode, b64encode
 
-@dataclass
-class IPFS_API:
-   host:str = "127.0.0.1"
-   port:int = 5001
-   base_url:str = "http://" + host + ":" + str(port)
 
-   def setHost(self, newHost:str):
+class IPFS_API:
+
+   def __init__(self, host="127.0.0.1", port=5001):
+      self.host = host
+      self.port = port
+      self.base_url = "http://" + self.host + ":" + str(self.port)
+
+   def setHost(self, newHost):
       self.host = newHost
       self.base_url = "http://" + self.host + ":" + str(self.port)
 
-   def setPort(self, newPort:int):
+   def setPort(self, newPort):
       self.port = newPort
       self.base_url = "http://" + self.host + ":" + str(self.port)
 
