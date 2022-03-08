@@ -242,7 +242,7 @@ async def localCleanupTask(exportMetadata, cleanEveryXsecs=10, expireEveryYsecs=
 ###############################################################################
 # ASYNC MAIN
 ###############################################################################
-async def main( exportCallback, metadataCallback, dump1090_host, dump1090_port, loglevel ):
+async def main( loop, exportCallback, metadataCallback, dump1090_host, dump1090_port, loglevel ):
    
    # Setup logging
    numeric_level = getattr(logging, loglevel.upper())
@@ -251,13 +251,11 @@ async def main( exportCallback, metadataCallback, dump1090_host, dump1090_port, 
 
    logging.info("Starting dump1090 tasks...")
    
-   task1 = asyncio.create_task( getSBS1DataTask(dump1090_host, dump1090_port) )
-   task2 = asyncio.create_task( exportDataTask(exportCallback) )
-   task3 = asyncio.create_task( localCleanupTask(metadataCallback) )
+   t1 = loop.create_task( getSBS1DataTask(dump1090_host, dump1090_port) )
+   t2 = loop.create_task( exportDataTask(exportCallback) )
+   t3 = loop.create_task( localCleanupTask(metadataCallback) )
 
-   tasks.append(task1)
-   tasks.append(task2)
-   tasks.append(task3)
+   tasks.extend([t1,t2,t3])
    
    await asyncio.sleep(1)
    logging.info("*** RUNNING ***")
@@ -273,16 +271,21 @@ def run( exportCallback=None,
          dump1090_port=30003,
          loglevel='INFO' ):
    
-   try: asyncio.run( main(exportCallback, metadataCallback, dump1090_host, dump1090_port, loglevel) )
-   
+   try:       
+      loop = asyncio.get_event_loop()
+      loop.run_until_complete( main(loop, exportCallback, metadataCallback, dump1090_host, dump1090_port, loglevel) )
+
    except KeyboardInterrupt:
 
       logging.info("KeyboardInterrupt")
       logging.info("Stopping dump1090 tasks...")
 
-      # Cancel all tasks
-      for task in tasks:
-         task.cancel()
+      for task in tasks: #asyncio.Task.all_tasks(loop):         
+         try: task.cancel()
+         except asyncio.CancelledError:
+            pass
+
+      loop.stop()
 
       # Clear JSON file
       with open(cacheFile, 'w') as outfile:
