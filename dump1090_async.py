@@ -280,12 +280,8 @@ def run( exportCallback=None,
       logging.info("KeyboardInterrupt")
       logging.info("Stopping dump1090 tasks...")
 
-      for task in tasks: #asyncio.Task.all_tasks(loop):         
-         try: task.cancel()
-         except asyncio.CancelledError:
-            pass
-
-      loop.stop()
+      for task in tasks:
+         task.cancel()
 
       # Clear JSON file
       with open(cacheFile, 'w') as outfile:
