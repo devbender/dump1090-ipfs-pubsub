@@ -5,7 +5,7 @@
 # Copyright (C) 2022  Juan Benitez
 # Distributed under GPLv3
 ###############################################################################
-from typing import OrderedDict
+from collections import OrderedDict
 import requests, json
 from base64 import b64decode, b64encode
 
