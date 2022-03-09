@@ -203,6 +203,9 @@ async def exportDataTask( callback=None):
          if ('lat' in localCache[icao]) and \
             ('lon' in localCache[icao]) and \
             ( localCache[icao]['new'] ):
+
+            # Remove new key for export
+            localCache[icao].pop('new')
             
             if callback is not None: 
                callback( localCache[icao] )

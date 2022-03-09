@@ -25,6 +25,7 @@ numeric_level = getattr(logging, loglevel.upper())
 fmt = '[%(levelname)s] %(asctime)s - %(message)s'
 logging.basicConfig(level=numeric_level, format=fmt)
 
+
 ###############################################################################
 # CONFIGURATION
 ###############################################################################
@@ -56,12 +57,12 @@ METADATA_PUB_CHANNELS = ['ADSB-ALL']
 airports = [ config['receiver']['closest_airport'], 
              config['receiver']['closest_major_airport'] ]
 
-for airport in airports:    
-    metadata_chan = "ADSB-" + airport
-    METADATA_PUB_CHANNELS.append(metadata_chan)
+for airport in airports:
+    METADATA_PUB_CHANNELS.append( "ADSB-" + airport )
 
 
 # Get pub channel id if exists, else create it and write to config
+NODE_NAME = config['channel']['name']
 PUB_CHANNEL_ID = config['channel']['id']
 
 if PUB_CHANNEL_ID == '':
@@ -72,28 +73,27 @@ if PUB_CHANNEL_ID == '':
         config.write(configfile)
 else: pass
 
+# Get data format from config
 DATA_FORMAT = config['channel']['format']
-
 
 # Set metadata
 metadata = {'id': PUB_CHANNEL_ID,        
             'format': DATA_FORMAT, 
             'location': MY_RX_LOCATION,
             'tracking': 0,        
-            'ts': 0 }
+            'ts': 0,
+            'name': NODE_NAME }
 
-# Output key orders
-metadata_key_order = ['id', 'format', 'location', 'tracking', 'ts']
-export_key_order = ['icao', 'csg', 'alt', 'lat', 'lon', 'spd', 'trk', 'vrt', 'gnf', 'ts']
 
 ###############################################################################
 # CALLBACKS
 ###############################################################################
 
 # ADS-B DATA CALLBACK
-def onData( data ):
-
-    try: pubsub.publishOrderedNDJSON( PUB_CHANNEL_ID, data, export_key_order )
+def onData( data ):    
+    
+    try: 
+        pubsub.publishNDJSON( PUB_CHANNEL_ID, data)
     except Exception as e:
         logging.error("IPFS Error: %s", e)
 
@@ -109,6 +109,8 @@ def pubMetaData():
     metadata['ts'] = int( time() )
 
     # Publish metadata
+    metadata_key_order = ['id', 'format', 'location', 'tracking', 'ts', 'name']
+
     for channel in METADATA_PUB_CHANNELS:        
         pubsub.publishOrderedNDJSON( channel, metadata, metadata_key_order )
 
