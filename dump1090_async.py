@@ -196,8 +196,6 @@ async def getSBS1DataTask( dump1090Host='localhost', dump1090Port=30003, frameSi
 async def exportDataTask( callback=None):
    logging.info("TASK: [exportDataTask] Started")
 
-   export_key_order = ['icao', 'csg', 'ts', 'alt', 'lat', 'lon', 'spd', 'trk', 'vrt', 'gnf']
-
    while True:
       await asyncio.sleep(1)
         
@@ -205,10 +203,9 @@ async def exportDataTask( callback=None):
          if ('lat' in localCache[icao]) and \
             ('lon' in localCache[icao]) and \
             ( localCache[icao]['new'] ):
-                  
-            dataOUT = dict( OrderedDict((k, localCache[icao].get(k)) for k in export_key_order) )            
+            
             if callback is not None: 
-               callback( dataOUT )
+               callback( localCache[icao] )
 
             localCache[icao]['new'] = 0
 

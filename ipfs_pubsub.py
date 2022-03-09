@@ -5,6 +5,7 @@
 # Copyright (C) 2022  Juan Benitez
 # Distributed under GPLv3
 ###############################################################################
+from typing import OrderedDict
 import requests, json
 from base64 import b64decode, b64encode
 
@@ -36,6 +37,7 @@ class IPFS_API:
    def getPeers( self, topic ):   
       urlPeers = self.base_url + "/api/v0/pubsub/peers?arg="
       peers = requests.post( urlPeers + self.ipfsb64encode(topic) )
+      
       return json.loads( peers.text )['Strings']
 
    def printPeers( self, topic ):   
@@ -43,10 +45,21 @@ class IPFS_API:
       peers = requests.post( urlPeers + self.ipfsb64encode(topic) )
       print( json.loads( peers.text )['Strings'] )
 
-   def publishNDJSON( self, topic:str, dataIN:dict, delimiter='\n' ):   
-      urlPub = self.base_url + "/api/v0/pubsub/pub?arg="   
+   def publishNDJSON( self, topic, dataIN, delimiter='\n' ):
+      urlPub = self.base_url + "/api/v0/pubsub/pub?arg="
+
       data = { 'file': ( json.dumps(dataIN) + delimiter ) }
       pub = requests.post( urlPub + self.ipfsb64encode(topic), files=data )      
+      
+      return pub
+
+   def publishOrderedNDJSON( self, topic, data, keyOrder, delimiter='\n' ):   
+      urlPub = self.base_url + "/api/v0/pubsub/pub?arg="
+      
+      jsonOrderedData = OrderedDict(  (k, data[k]) for k in keyOrder  )
+      data = { 'file': ( json.dumps(jsonOrderedData) + delimiter ) }
+      pub = requests.post( urlPub + self.ipfsb64encode(topic), files=data )      
+      
       return pub
 
    def subscribe( self, topic, callback ):

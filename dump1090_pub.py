@@ -11,8 +11,9 @@ import dump1090_async as dump1090
 from os import path
 from uuid import uuid4
 from time import time
-from json import load as loadjson
+from json import dumps, load as loadjson
 from configparser import ConfigParser
+from collections import OrderedDict
 
 
 ###############################################################################
@@ -75,20 +76,26 @@ DATA_FORMAT = config['channel']['format']
 
 
 # Set metadata
-meta = {'id': PUB_CHANNEL_ID,        
-        'format': DATA_FORMAT, 
-        'location': MY_RX_LOCATION,
-        'tracking': 0,        
-        'ts': 0 }
+metadata = {'id': PUB_CHANNEL_ID,        
+            'format': DATA_FORMAT, 
+            'location': MY_RX_LOCATION,
+            'tracking': 0,        
+            'ts': 0 }
 
+metadata_key_order = ['id', 'format', 'location', 'tracking', 'ts']
 
 ###############################################################################
 # CALLBACKS
 ###############################################################################
 
 # ADS-B DATA CALLBACK
-def onData( data ):    
-    try: pubsub.publishNDJSON( PUB_CHANNEL_ID, data )
+def onData( data ):
+    
+    export_key_order = ['icao', 'csg', 'ts', 'alt', 'lat', 'lon', 'spd', 'trk', 'vrt', 'gnf']
+
+    try:
+        pubsub.publishNDJSON( PUB_CHANNEL_ID, data)
+        #pubsub.publishOrderedNDJSON( PUB_CHANNEL_ID, data, export_key_order )
     except Exception as e:
         logging.error("IPFS Error: %s", e)
 
@@ -98,14 +105,14 @@ def pubMetaData():
     # Check how many aircrafts we are tracking
     with open(dump1090.cacheFile, 'r') as f:
         data = loadjson(f)
-        meta['tracking'] = len(data)
+        metadata['tracking'] = len(data)
 
     # Update timestamp
-    meta['ts'] = int( time() )
+    metadata['ts'] = int( time() )
 
     # Publish metadata
-    for channel in METADATA_PUB_CHANNELS:
-        pubsub.publishNDJSON( channel, meta )
+    for channel in METADATA_PUB_CHANNELS:        
+        pubsub.publishOrderedNDJSON( channel, metadata, metadata_key_order )
 
 
 ###############################################################################
