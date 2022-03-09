@@ -82,7 +82,9 @@ metadata = {'id': PUB_CHANNEL_ID,
             'tracking': 0,        
             'ts': 0 }
 
+# Output key orders
 metadata_key_order = ['id', 'format', 'location', 'tracking', 'ts']
+export_key_order = ['icao', 'csg', 'alt', 'lat', 'lon', 'spd', 'trk', 'vrt', 'gnf', 'ts']
 
 ###############################################################################
 # CALLBACKS
@@ -90,12 +92,8 @@ metadata_key_order = ['id', 'format', 'location', 'tracking', 'ts']
 
 # ADS-B DATA CALLBACK
 def onData( data ):
-    
-    export_key_order = ['icao', 'csg', 'ts', 'alt', 'lat', 'lon', 'spd', 'trk', 'vrt', 'gnf']
 
-    try:
-        pubsub.publishNDJSON( PUB_CHANNEL_ID, data)
-        #pubsub.publishOrderedNDJSON( PUB_CHANNEL_ID, data, export_key_order )
+    try: pubsub.publishOrderedNDJSON( PUB_CHANNEL_ID, data, export_key_order )
     except Exception as e:
         logging.error("IPFS Error: %s", e)
 
