@@ -10,8 +10,8 @@ from ipfs_pubsub import IPFS_API as IPFS_PUBSUB
 import dump1090_async as dump1090
 from os import path
 from uuid import uuid4
-from time import time
-from json import dumps, load as loadjson
+from time import time, sleep
+from json import load as loadjson
 from configparser import ConfigParser
 from collections import OrderedDict
 
@@ -92,10 +92,11 @@ metadata = {'id': PUB_CHANNEL_ID,
 # ADS-B DATA CALLBACK
 def onData( data ):    
     
-    try: 
-        pubsub.publishNDJSON( PUB_CHANNEL_ID, data)
+    try: pubsub.publishNDJSON( PUB_CHANNEL_ID, data)
     except Exception as e:
         logging.error("IPFS Error: %s", e)
+        sleep(10)
+
 
 # METADATA CALLBACK
 def pubMetaData():
@@ -112,15 +113,19 @@ def pubMetaData():
     metadata_key_order = ['id', 'format', 'location', 'tracking', 'ts', 'name']
 
     for channel in METADATA_PUB_CHANNELS:        
-        pubsub.publishOrderedNDJSON( channel, metadata, metadata_key_order )
+        try: pubsub.publishOrderedNDJSON( channel, metadata, metadata_key_order )
+        except Exception as e:
+            logging.error("IPFS Error: %s", e)
+            sleep(10)
+
 
 
 ###############################################################################
 # RUN MAIN
 ###############################################################################
 logging.info(">>> DUMP1090 IPFS PUBSUB v0.1 <<<")
-logging.info("Using ipfs api url @ %s", pubsub.base_url)
-logging.info("Using dump1090 instance @ %s:%s", DUMP1090_HOST, DUMP1090_PORT)
+logging.info("Using IPFS API @ %s", pubsub.base_url)
+logging.info("Using dump1090 @ %s:%s", DUMP1090_HOST, DUMP1090_PORT)
 logging.info("Publishing metadata to: %s", METADATA_PUB_CHANNELS)
 logging.info("Publishing dump1090 data to: %s", PUB_CHANNEL_ID)
 

@@ -7,7 +7,6 @@
 ###############################################################################
 import asyncio, logging,json
 from time import time
-from collections import OrderedDict
 from os import path
 
 tasks = []
@@ -178,17 +177,20 @@ async def getSBS1DataTask( dump1090Host='localhost', dump1090Port=30003, frameSi
    except Exception as e:
       logging.error("Unable to connect to dump1090: %s", e)
 
-   while True:
-      data = await reader.read( frameSizeKb*1024 )
-      data = data.decode('utf-8').splitlines()        
-        
-      for line in data:
-         if line != '':
-            try: val = SBS1toDict(line)
-            except: pass
-            if val != None:                   
-               updateLocalCache(val)
-
+   try:
+      while True:
+         data = await reader.read( frameSizeKb*1024 )
+         data = data.decode('utf-8').splitlines()        
+         
+         for line in data:
+            if line != '':
+               try: val = SBS1toDict(line)
+               except: pass
+               if val != None:                   
+                  updateLocalCache(val)
+   
+   except asyncio.CancelledError:
+      logging.info("TASK: [getSBS1DataTask] Stopped")
 
 ###############################################################################
 # DATA EXPORT
@@ -196,25 +198,28 @@ async def getSBS1DataTask( dump1090Host='localhost', dump1090Port=30003, frameSi
 async def exportDataTask( callback=None):
    logging.info("TASK: [exportDataTask] Started")
 
-   while True:
-      await asyncio.sleep(1)
-        
-      for icao in list(localCache):
-         if ('lat' in localCache[icao]) and \
-            ('lon' in localCache[icao]) and \
-            ( localCache[icao]['new'] ):
+   try:
+      while True:
+         await asyncio.sleep(1)
+         
+         for icao in list(localCache):
+            if ('lat' in localCache[icao]) and \
+               ('lon' in localCache[icao]) and \
+               ( localCache[icao]['new'] ):
 
-            # Remove new key for export
-            localCache[icao].pop('new')
-            
-            if callback is not None: 
-               callback( localCache[icao] )
+               # Remove new key for export
+               localCache[icao].pop('new')
+               
+               if callback is not None: 
+                  callback( localCache[icao] )
 
-            localCache[icao]['new'] = 0
+               localCache[icao]['new'] = 0
 
-      with open(cacheFile, 'w') as outfile:
-         json.dump(localCache, outfile, indent=4)
+         with open(cacheFile, 'w') as outfile:
+            json.dump(localCache, outfile, indent=4)
 
+   except asyncio.CancelledError:
+      logging.info("TASK: [exportDataTask] Stopped")
 
 ###############################################################################
 # DATA CLEANUP
@@ -222,45 +227,26 @@ async def exportDataTask( callback=None):
 async def localCleanupTask(exportMetadata, cleanEveryXsecs=10, expireEveryYsecs=60):
 
    logging.info("TASK: [localCleanupTask] Started")
-   
-   while True:      
-   
-      for icao in list(localCache):
 
-         # Remove aircraft from local cache if no new data in last X seconds
-         if (time() - localCache[icao]['ts'] ) > expireEveryYsecs:
-            localCache.pop(icao, None)
-            logging.debug("[REMOVED] %s", icao)
+   try:   
+      while True:      
       
-         else: pass
+         for icao in list(localCache):
 
-      # Export metadata to callback
-      exportMetadata()
+            # Remove aircraft from local cache if no new data in last X seconds
+            if (time() - localCache[icao]['ts'] ) > expireEveryYsecs:
+               localCache.pop(icao, None)
+               logging.debug("[REMOVED] %s", icao)
+         
+            else: pass
 
-      await asyncio.sleep(cleanEveryXsecs)
+         # Export metadata to callback
+         exportMetadata()
 
-###############################################################################
-# ASYNC MAIN
-###############################################################################
-async def main( loop, exportCallback, metadataCallback, dump1090_host, dump1090_port, loglevel ):
-   
-   # Setup logging
-   numeric_level = getattr(logging, loglevel.upper())
-   fmt = '[%(levelname)s] %(asctime)s - %(message)s'
-   logging.basicConfig(level=numeric_level, format=fmt)
+         await asyncio.sleep(cleanEveryXsecs)
 
-   logging.info("Starting dump1090 tasks...")
-   
-   t1 = loop.create_task( getSBS1DataTask(dump1090_host, dump1090_port) )
-   t2 = loop.create_task( exportDataTask(exportCallback) )
-   t3 = loop.create_task( localCleanupTask(metadataCallback) )
-
-   tasks.extend([t1,t2,t3])
-   
-   await asyncio.sleep(1)
-   logging.info("*** RUNNING ***")
-    
-   while True: await asyncio.sleep(1)
+   except asyncio.CancelledError:
+      logging.info("TASK: [localCleanupTask] Stopped")
 
 ###############################################################################
 # RUN
@@ -270,11 +256,22 @@ def run( exportCallback=None,
          dump1090_host='localhost',
          dump1090_port=30003,
          loglevel='INFO' ):
-   
-   try:       
-      loop = asyncio.get_event_loop()
-      loop.run_until_complete( main(loop, exportCallback, metadataCallback, dump1090_host, dump1090_port, loglevel) )
 
+   # Setup logging
+   numeric_level = getattr(logging, loglevel.upper())
+   fmt = '[%(levelname)s] %(asctime)s - %(message)s'
+   logging.basicConfig(level=numeric_level, format=fmt)
+
+   logging.info("Starting dump1090 tasks...")
+   loop = asyncio.get_event_loop()
+
+   t1 = loop.create_task( getSBS1DataTask(dump1090_host, dump1090_port) )
+   t2 = loop.create_task( exportDataTask(exportCallback) )
+   t3 = loop.create_task( localCleanupTask(metadataCallback) )
+
+   tasks.extend([t1,t2,t3])
+
+   try: loop.run_forever()
    except KeyboardInterrupt:
 
       logging.info("KeyboardInterrupt")
@@ -282,6 +279,7 @@ def run( exportCallback=None,
 
       for task in tasks:
          task.cancel()
+         loop.run_until_complete(task)
 
       # Clear JSON file
       with open(cacheFile, 'w') as outfile:
