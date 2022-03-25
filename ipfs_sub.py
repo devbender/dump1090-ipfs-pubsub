@@ -5,15 +5,14 @@
 # Copyright (C) 2022  Juan Benitez
 # Distributed under GPLv3
 ###############################################################################
-import json
-import ipfs_pubsub as ipfs
+from ipfs_pubsub import IPFS_API
 
-TOPIC = 'ADSB-SDQ'
+ipfs = IPFS_API(host="localhost", port=5001, proto='http')
+
+TOPIC = 'ADSB-ALL'
 
 def onData( peer, data ):
-    print( json.loads( data ) )
+    print( data, end='' )
 
 ipfs.printPeers( TOPIC )
-
-try: ipfs.subscribe( TOPIC, onData )
-except KeyboardInterrupt: print("*** TERMINATED ***")
+ipfs.subscribe( TOPIC, onData )
