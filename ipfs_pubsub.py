@@ -31,9 +31,6 @@ class IPFS_API:
       self.proto = proto
       self.auth = False
 
-      if host != 'localhost':
-         logging.warning("Using an IPFS remote API server is not recommended.")
-
       self.session = requests.Session()
       retry = Retry(connect=10, backoff_factor=2)
       adapter = HTTPAdapter(max_retries=retry)
@@ -53,9 +50,6 @@ class IPFS_API:
    def setHost(self, newHost):
       self.host = newHost
       self.base_url = self.proto + "://" + self.host + ":" + str(self.port)
-
-      if newHost != 'localhost':
-         logging.warning("Using an IPFS remote API server is not recommended.")
 
    def setPort(self, newPort):
       self.port = newPort
@@ -86,11 +80,16 @@ class IPFS_API:
       endpoint = self.base_url + "/api/v0/pubsub/peers?arg="
       
       if(not self.auth): 
-         peers = self.session.post( endpoint + self.ipfsb64encode(topic) )         
+         req = self.session.post( endpoint + self.ipfsb64encode(topic) )         
       else:
-         peers = self.session.post( endpoint + self.ipfsb64encode(topic), auth=(self.user, self.passwd) )
+         req = self.session.post( endpoint + self.ipfsb64encode(topic), auth=(self.user, self.passwd) )
+
+      # Check response status codes
+      if req.status_code != 200: 
+         logging.error("HTTP Request Error Code: %s", req.status_code)
+         return
       
-      print( json.loads( peers.text )['Strings'] )
+      print( json.loads( req.text )['Strings'] )
 
 
    def publishNDJSON( self, topic, dataIN, delimiter='\n' ):
@@ -124,6 +123,7 @@ class IPFS_API:
       # Check response status codes
       if req.status_code != 200: 
          logging.error("HTTP Request Error Code: %s", req.status_code)
+         return
       
       # Get data and send to callback
       for line in req.iter_lines():

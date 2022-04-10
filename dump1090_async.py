@@ -173,9 +173,7 @@ def updateLocalCache( data ):
 async def getSBS1DataTask( dump1090Host='localhost', dump1090Port=30003, frameSizeKb=64 ):
    logging.info("TASK: [getSBS1DataTask] Started")
     
-   try: reader, writer = await asyncio.open_connection( dump1090Host, dump1090Port)
-   except Exception as e:
-      logging.error("Unable to connect to dump1090: %s", e)
+   reader, writer = await asyncio.open_connection( dump1090Host, dump1090Port)   
 
    try:
       while True:
@@ -241,7 +239,7 @@ async def localCleanupTask(exportMetadata, cleanEveryXsecs=10, expireEveryYsecs=
             else: pass
 
          # Export metadata to callback
-         exportMetadata()
+         exportMetadata( len(localCache) )
 
          await asyncio.sleep(cleanEveryXsecs)
 
@@ -287,8 +285,6 @@ def run( exportCallback=None,
 
       logging.info("*** TERMINATED ***")
 
-   except Exception as e:
-      logging.error(e)
 
 ###############################################################################
 # MAIN

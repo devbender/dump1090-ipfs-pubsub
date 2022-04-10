@@ -90,35 +90,24 @@ metadata = {'id': PUB_CHANNEL_ID,
 ###############################################################################
 
 # ADS-B DATA CALLBACK
-def onData( data ):    
-    
-    try: pubsub.publishNDJSON( PUB_CHANNEL_ID, data)
-    except Exception as e:
-        logging.error("IPFS Error: %s", e)
-        sleep(10)
-
+def onData( data ):
+    pubsub.publishNDJSON( PUB_CHANNEL_ID, data)
 
 # METADATA CALLBACK
-def pubMetaData():
+def pubMetaData( aircrafts ):
 
-    # Check how many aircrafts we are tracking
-    with open(dump1090.cacheFile, 'r') as f:
-        data = loadjson(f)
-        metadata['tracking'] = len(data)
+    # Add how many aircrafts we are tracking to metadata
+    metadata['tracking'] = aircrafts
 
-    # Update timestamp
+    # Add timestamp to metadata
     metadata['ts'] = int( time() )
 
-    # Publish metadata
+    # Order of keys in metadata
     metadata_key_order = ['id', 'format', 'location', 'tracking', 'ts', 'name']
 
     for channel in METADATA_PUB_CHANNELS:        
-        try: pubsub.publishOrderedNDJSON( channel, metadata, metadata_key_order )
-        except Exception as e:
-            logging.error("IPFS Error: %s", e)
-            sleep(10)
-
-
+        pubsub.publishOrderedNDJSON( channel, metadata, metadata_key_order )
+        
 
 ###############################################################################
 # RUN MAIN

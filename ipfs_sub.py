@@ -7,7 +7,9 @@
 ###############################################################################
 from ipfs_pubsub import IPFS_API
 
-ipfs = IPFS_API(host="localhost", port=5001, proto='http')
+#ipfs = IPFS_API(host="localhost", port=5001, proto='http')
+ipfs = IPFS_API(host="api.iostream.network", port=8447, proto='https')
+ipfs.setHttpAuth("admin", "bdre4s")
 
 TOPIC = 'ADSB-ALL'
 
